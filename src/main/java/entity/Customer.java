@@ -2,6 +2,7 @@ package entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,7 +24,7 @@ public class Customer {
 
     @ManyToOne
     @JoinColumn(name = "store_id")
-    private Store storeId;
+    private Store store;
 
     @Column(name = "first_name")
     private String firstName;
@@ -34,7 +36,7 @@ public class Customer {
 
     @OneToOne
     @JoinColumn(name = "address_id")
-    private Address addressId;
+    private Address address;
 
     @Column(name = "active", columnDefinition = "bit")
     private Boolean isActive;
