@@ -11,22 +11,18 @@ import java.util.List;
 public class BaseDAO<T> {
     private final Class<T> clazz;
 
-    private SessionFactory sessionFactory;
+    protected SessionFactory sessionFactory;
 
     public T getById(int id) {
         try (Session session = sessionFactory.openSession()){
-            Transaction transaction = session.beginTransaction();
             T object = session.find(clazz, id);
-            transaction.commit();
             return object;
         }
     }
 
     public List<T> getAll() {
         try (Session session = sessionFactory.openSession()){
-            Transaction transaction = session.beginTransaction();
             List<T> list = session.createQuery("from " + clazz.getName(), clazz).list();
-            transaction.commit();
             return list;
         }
     }
@@ -50,10 +46,18 @@ public class BaseDAO<T> {
     }
 
     public void delete(T entity) {
-        sessionFactory.getCurrentSession().remove(entity);
+        try (Session session = sessionFactory.openSession()) {
+            Transaction transaction = session.beginTransaction();
+            session.remove(entity);
+            transaction.commit();
+        }
     }
 
     public void delete(int id) {
-        sessionFactory.getCurrentSession().remove(getById(id));
+        try (Session session = sessionFactory.openSession()) {
+            Transaction transaction = session.beginTransaction();
+            session.remove(getById(id));
+            transaction.commit();
+        }
     }
 }
