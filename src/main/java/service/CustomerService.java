@@ -7,6 +7,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -93,6 +94,44 @@ public class CustomerService {
             rentalDAO.update(rental);
             transaction.commit();
             return rental;
+        }
+    }
+
+    public Rental rentTheMovie(int customerId, int filmId, int staffId) {
+        try (Session session = sessionFactory.getCurrentSession()) {
+            Transaction transaction = session.beginTransaction();
+
+            Customer customer = customerDAO.getById(customerId);
+            Film film = filmDAO.getById(filmId);
+            boolean available = false;
+            if (film != null) {
+                available = rentalDAO.checkTheFilmForAvailability(filmId);
+            }
+            Staff staff = staffDAO.getById(staffId);
+
+            if (customer != null && available && staff != null) {
+                Inventory inventory = Inventory.builder()
+                        .film(film)
+                        .store(staff.getStore())
+                        .build();
+                Rental rental = Rental.builder()
+                        .rentalDate(LocalDateTime.now())
+                        .inventory(inventory)
+                        .customer(customer)
+                        .staff(staff)
+                        .build();
+                Payment payment = Payment.builder()
+                        .customer(customer)
+                        .staff(staff)
+                        .rental(rental)
+                        .amount(BigDecimal.valueOf(0.99))
+                        .paymentDate(LocalDateTime.now())
+                        .build();
+                paymentDAO.save(payment);
+                transaction.commit();
+                return rental;
+            } else
+                throw new NullPointerException(!available ? "Film is not available" : "Customer or Staff is null");
         }
     }
 }

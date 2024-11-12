@@ -2,6 +2,7 @@ package entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,11 +29,11 @@ public class Payment {
 
     @ManyToOne
     @JoinColumn(name = "staff_id")
-    private Staff staffId;
+    private Staff staff;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "rental_id")
-    private Rental rentalId;
+    private Rental rental;
 
     private BigDecimal amount;
 

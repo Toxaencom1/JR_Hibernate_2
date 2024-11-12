@@ -40,7 +40,7 @@ public class Staff {
     @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "store_id")
-    private Store storeId;
+    private Store store;
 
     @Column(name = "active", columnDefinition = "bit")
     private Boolean isActive;
