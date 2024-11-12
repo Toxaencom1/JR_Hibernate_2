@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-public class CustomerService {
+public class StoreService {
     private final SessionFactory sessionFactory;
 
     private final ActorDAO actorDAO;
@@ -29,7 +29,7 @@ public class CustomerService {
     private final StaffDAO staffDAO;
     private final StoreDAO storeDAO;
 
-    public CustomerService(SessionFactory sessionFactory) {
+    public StoreService(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
         actorDAO = new ActorDAO(sessionFactory);
         addressDAO = new AddressDAO(sessionFactory);
@@ -102,18 +102,12 @@ public class CustomerService {
             Transaction transaction = session.beginTransaction();
 
             Customer customer = customerDAO.getById(customerId);
-            Film film = filmDAO.getById(filmId);
-            boolean available = false;
-            if (film != null) {
-                available = rentalDAO.checkTheFilmForAvailability(filmId);
-            }
+
+            Inventory inventory = inventoryDAO.pickAvailableInventoryMovie(filmId);
+
             Staff staff = staffDAO.getById(staffId);
 
-            if (customer != null && available && staff != null) {
-                Inventory inventory = Inventory.builder()
-                        .film(film)
-                        .store(staff.getStore())
-                        .build();
+            if (customer != null && inventory != null && staff != null) {
                 Rental rental = Rental.builder()
                         .rentalDate(LocalDateTime.now())
                         .inventory(inventory)
@@ -131,7 +125,18 @@ public class CustomerService {
                 transaction.commit();
                 return rental;
             } else
-                throw new NullPointerException(!available ? "Film is not available" : "Customer or Staff is null");
+                throw new NullPointerException((inventory == null) ? "Film not available." : "Customer or Inventory or Staff is null");
         }
     }
+
+//    public Film addNewFilm(FilmCreateDTO){
+//        try (Session session = sessionFactory.getCurrentSession()) {
+//            Transaction transaction = session.beginTransaction();
+//
+//
+//
+//            transaction.commit();
+//            return  film;
+//        }
+//    }
 }
