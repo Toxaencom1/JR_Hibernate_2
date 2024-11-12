@@ -34,7 +34,7 @@ public class Customer {
 
     private String email;
 
-    @OneToOne
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},orphanRemoval = true)
     @JoinColumn(name = "address_id")
     private Address address;
 

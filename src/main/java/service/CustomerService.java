@@ -13,8 +13,10 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
+import java.util.Optional;
+
 public class CustomerService {
-    private SessionFactory sessionFactory;
+    private final SessionFactory sessionFactory;
 
     private final CustomerDAO customerDAO;
     private final StoreDAO storeDAO;
@@ -29,25 +31,30 @@ public class CustomerService {
         cityDAO = new CityDAO(sessionFactory);
     }
 
-    public Customer createCustomer(CustomerCreateDTO customerCreateDTO, Store store) {
+    public Customer createCustomer(CustomerCreateDTO customerCreateDTO, int storeId) {
 
-        try (Session session = sessionFactory.openSession()){
+        try (Session session = sessionFactory.getCurrentSession()) {
             Transaction transaction = session.beginTransaction();
+            Store store = storeDAO.getById(storeId);
             Address address;
-            City city;
-            address = addressDAO.getAddressByName(customerCreateDTO.getAddress());
-            city = cityDAO.getCityByName(customerCreateDTO.getCity());
-            if (address == null || city == null) {
-                address = Address.builder()
-                        .address(customerCreateDTO.getAddress())
-                        .address2(customerCreateDTO.getAddress2())
-                        .district(customerCreateDTO.getDistrict())
-                        .city(city)
-                        .postalCode(customerCreateDTO.getPostalCode())
-                        .phone(customerCreateDTO.getPhone())
-                        .build();
-                session.persist(address);
-            }
+            Optional<Address> addressByName = addressDAO.getAddressByName(customerCreateDTO.getAddress());
+            if (!addressByName.isPresent()) {
+                Optional<City> cityByName = cityDAO.getCityByName(customerCreateDTO.getCity());
+                if (cityByName.isPresent()) {
+                    address = Address.builder()
+                            .address(customerCreateDTO.getAddress())
+                            .address2(customerCreateDTO.getAddress2())
+                            .district(customerCreateDTO.getDistrict())
+                            .city(cityByName.get())
+                            .postalCode(customerCreateDTO.getPostalCode())
+                            .phone(customerCreateDTO.getPhone())
+                            .build();
+                } else {
+                    throw new NullPointerException("Address is invalid");
+                }
+            } else
+                address = addressByName.get();
+
             Customer customer = Customer.builder()
                     .store(store)
                     .firstName(customerCreateDTO.getFirstName())

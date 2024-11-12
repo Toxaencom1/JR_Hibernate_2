@@ -26,7 +26,7 @@ public class Address {
 
     private String district;
 
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.PERSIST})
     @JoinColumn(name = "city_id")
     private City city;
 

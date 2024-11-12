@@ -3,7 +3,6 @@ package dao;
 import lombok.AllArgsConstructor;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 
 import java.util.List;
 
@@ -14,50 +13,31 @@ public class BaseDAO<T> {
     protected SessionFactory sessionFactory;
 
     public T getById(int id) {
-        try (Session session = sessionFactory.openSession()){
-            T object = session.find(clazz, id);
-            return object;
-        }
+        return getCurrentSession().find(clazz, id);
     }
 
     public List<T> getAll() {
-        try (Session session = sessionFactory.openSession()){
-            List<T> list = session.createQuery("from " + clazz.getName(), clazz).list();
-            return list;
-        }
+        return getCurrentSession().createQuery("from " + clazz.getName(), clazz).list();
     }
 
     public T save(T entity) {
-        try (Session session = sessionFactory.openSession()){
-            Transaction transaction = session.beginTransaction();
-            session.persist(entity);
-            transaction.commit();
-            return entity;
-        }
+        getCurrentSession().persist(entity);
+        return entity;
     }
 
     public T update(T entity) {
-        try (Session session = sessionFactory.openSession()){
-            Transaction transaction = session.beginTransaction();
-            T merge = session.merge(entity);
-            transaction.commit();
-            return merge;
-        }
+        return getCurrentSession().merge(entity);
     }
 
     public void delete(T entity) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.remove(entity);
-            transaction.commit();
-        }
+        getCurrentSession().remove(entity);
     }
 
     public void delete(int id) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            session.remove(getById(id));
-            transaction.commit();
-        }
+        getCurrentSession().remove(getById(id));
+    }
+
+    protected Session getCurrentSession() {
+        return sessionFactory.getCurrentSession();
     }
 }
