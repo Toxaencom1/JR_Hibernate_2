@@ -1,34 +1,49 @@
 package service;
 
-import dao.AddressDAO;
-import dao.CityDAO;
-import dao.CustomerDAO;
-import dao.StoreDAO;
+import dao.*;
 import dto.CustomerCreateDTO;
-import entity.Address;
-import entity.City;
-import entity.Customer;
-import entity.Store;
+import entity.*;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public class CustomerService {
     private final SessionFactory sessionFactory;
 
-    private final CustomerDAO customerDAO;
-    private final StoreDAO storeDAO;
+    private final ActorDAO actorDAO;
     private final AddressDAO addressDAO;
+    private final CategoryDAO categoryDAO;
     private final CityDAO cityDAO;
+    private final CountryDAO countryDAO;
+    private final CustomerDAO customerDAO;
+    private final FilmDAO filmDAO;
+    private final FilmTextDAO filmTextDAO;
+    private final InventoryDAO inventoryDAO;
+    private final LanguageDAO languageDAO;
+    private final PaymentDAO paymentDAO;
+    private final RentalDAO rentalDAO;
+    private final StaffDAO staffDAO;
+    private final StoreDAO storeDAO;
 
     public CustomerService(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
-        customerDAO = new CustomerDAO(sessionFactory);
-        storeDAO = new StoreDAO(sessionFactory);
+        actorDAO = new ActorDAO(sessionFactory);
         addressDAO = new AddressDAO(sessionFactory);
+        categoryDAO = new CategoryDAO(sessionFactory);
         cityDAO = new CityDAO(sessionFactory);
+        countryDAO = new CountryDAO(sessionFactory);
+        customerDAO = new CustomerDAO(sessionFactory);
+        filmDAO = new FilmDAO(sessionFactory);
+        filmTextDAO = new FilmTextDAO(sessionFactory);
+        inventoryDAO = new InventoryDAO(sessionFactory);
+        languageDAO = new LanguageDAO(sessionFactory);
+        paymentDAO = new PaymentDAO(sessionFactory);
+        rentalDAO = new RentalDAO(sessionFactory);
+        staffDAO = new StaffDAO(sessionFactory);
+        storeDAO = new StoreDAO(sessionFactory);
     }
 
     public Customer createCustomer(CustomerCreateDTO customerCreateDTO, int storeId) {
@@ -66,6 +81,18 @@ public class CustomerService {
             session.persist(customer);
             transaction.commit();
             return customer;
+        }
+    }
+
+    public Rental filmReturning(int rentalId) {
+        try (Session session = sessionFactory.getCurrentSession()) {
+            Transaction transaction = session.beginTransaction();
+
+            Rental rental = rentalDAO.getById(rentalId);
+            rental.setReturnDate(LocalDateTime.now());
+            rentalDAO.update(rental);
+            transaction.commit();
+            return rental;
         }
     }
 }

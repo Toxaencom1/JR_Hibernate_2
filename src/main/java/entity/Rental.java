@@ -24,11 +24,18 @@ public class Rental {
 
     @ManyToOne
     @JoinColumn(name = "inventory_id")
-    private Inventory inventoryId;
+    private Inventory inventory;
+
+    @ManyToOne()
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
+
+    @Column(name = "return_date")
+    private LocalDateTime returnDate;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id")
-    private Customer customerId;
+    @JoinColumn(name = "staff_id")
+    private Staff staff;
 
     @Column(name = "last_update")
     @UpdateTimestamp
