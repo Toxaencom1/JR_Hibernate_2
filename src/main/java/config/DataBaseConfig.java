@@ -4,6 +4,7 @@ package config;
 import jakarta.persistence.Entity;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
 import org.hibernate.cfg.JdbcSettings;
 import org.reflections.Reflections;
 
@@ -18,6 +19,8 @@ public class DataBaseConfig {
                 .setProperty(JdbcSettings.JAKARTA_JDBC_USER, "")
                 .setProperty(JdbcSettings.JAKARTA_JDBC_PASSWORD, "")
                 .setProperty(JdbcSettings.SHOW_SQL, "true")
+                .setProperty(JdbcSettings.FORMAT_SQL, "true")
+                .setProperty(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread")
                 .setProperty("hibernate.hbm2ddl.auto", "validate");
         Reflections reflections = new Reflections("entity");
         reflections.getTypesAnnotatedWith(Entity.class).forEach(cfg::addAnnotatedClass);

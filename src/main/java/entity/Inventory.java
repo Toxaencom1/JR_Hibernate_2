@@ -21,7 +21,7 @@ public class Inventory {
     @Column(name = "inventory_id")
     private Integer inventoryId;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "film_id")
     private Film film;
 

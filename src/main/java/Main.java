@@ -1,69 +1,70 @@
 import config.DataBaseConfig;
-import dao.*;
 import org.hibernate.SessionFactory;
+import service.StoreService;
 
 
 public class Main {
-    SessionFactory sessionFactory;
     DataBaseConfig config;
+    SessionFactory sessionFactory;
 
-    private final ActorDAO actorDAO;
-    private final AddressDAO addressDAO;
-    private final CategoryDAO categoryDAO;
-    private final CityDAO cityDAO;
-    private final CountryDAO countryDAO;
-    private final CustomerDAO customerDAO;
-    private final FilmDAO filmDAO;
-    private final FilmTextDAO filmTextDAO;
-    private final InventoryDAO inventoryDAO;
-    private final LanguageDAO languageDAO;
-    private final PaymentDAO paymentDAO;
-    private final RentalDAO rentalDAO;
-    private final StaffDAO staffDAO;
-    private final StoreDAO storeDAO;
+    private final StoreService storeService;
 
-    public Main(){
-        config = new DataBaseConfig();
-        sessionFactory = config.buildSessionFactory();
-
-        actorDAO = new ActorDAO(sessionFactory);
-        addressDAO = new AddressDAO(sessionFactory);
-        categoryDAO = new CategoryDAO(sessionFactory);
-        cityDAO = new CityDAO(sessionFactory);
-        countryDAO = new CountryDAO(sessionFactory);
-        customerDAO = new CustomerDAO(sessionFactory);
-        filmDAO = new FilmDAO(sessionFactory);
-        filmTextDAO = new FilmTextDAO(sessionFactory);
-        inventoryDAO = new InventoryDAO(sessionFactory);
-        languageDAO = new LanguageDAO(sessionFactory);
-        paymentDAO = new PaymentDAO(sessionFactory);
-        rentalDAO = new RentalDAO(sessionFactory);
-        staffDAO = new StaffDAO(sessionFactory);
-        storeDAO = new StoreDAO(sessionFactory);
+    public Main() {
+        this.config = new DataBaseConfig();
+        this.sessionFactory = config.buildSessionFactory();
+        storeService = new StoreService(sessionFactory);
     }
 
     public static void main(String[] args) {
         Main app = new Main();
-//        City city = app.cityDAO.getById(343);
-//        Store store = app.storeDAO.getById(1);
-//        Address address = Address.builder()
-//                .address("Chehova")
-//                .city(city)
-//                .district("Center")
-//                .postalCode("12345")
-//                .phone("+77071561900")
-//                .build();
-//        app.addressDAO.save(address);
-//        Customer customer = Customer.builder()
-//                .store(store)
+
+//        CustomerCreateDTO customerDTO = CustomerCreateDTO.builder()
 //                .firstName("John")
 //                .lastName("Doe")
-//                .email("john@doe.com")
-//                .address(address)
-//                .isActive(true)
+//                .email("John@mail.ru")
+//                .address("Behtereva 15")
+//                .address2("flat 2")
+//                .phone("+77771234567")
+//                .district("Central")
+//                .city("Moscow")
+//                .postalCode("12345")
 //                .build();
-//        Customer customer1 = app.customerDAO.save(customer);
-//        Customer customer1 = app.customerDAO.getById(600);
-//        System.out.println(customer1);
+//        Customer customer = app.storeService.createCustomer(customerDTO, 1);
+//        System.out.println(customer);
+
+//        Rental returned = app.storeService.filmReturning(16061);
+//        System.out.println(returned.getReturnDate());
+
+//        Rental rental = app.storeService.rentTheMovie(606,1001,2);
+//        System.out.println(rental.getRentalId());
+//        System.out.println(rental.getReturnDate());
+
+
+//        Actor actor1 = app.storeService.findActorByNameAndSurname("Matt", "Smith");
+//        Actor actor2 = app.storeService.findActorByNameAndSurname("Jenna", "Coleman");
+//        List<Actor> actorList = List.of(actor1, actor2);
+//
+//
+//        Category category1 = app.storeService.findCategoryByName("Action");
+//        Category category2 = app.storeService.findCategoryByName("Sci-Fi");
+//        Category category3 = app.storeService.findCategoryByName("Drama");
+//        List<Category> categoryList = List.of(category1, category2, category3);
+//
+//
+//        FilmCreateDTO filmDTO = FilmCreateDTO.builder()
+//                .title("Doctor Who: The Snowmen")
+//                .description("The Doctor, who has lost faith in himself, meets Clara in Victorian London.")
+//                .releaseYear(Year.of(2012))
+//                .languageId(7)
+//                .originalLanguageId(1)
+//                .rentalDuration((byte) 3)
+//                .rentalRate(BigDecimal.valueOf(2.99))
+//                .length((short) 60)
+//                .replacementCost(BigDecimal.valueOf(15.99))
+//                .rating(Rating.PG)
+//                .specialFeatures("Trailers,Behind the Scenes")
+//                .build();
+//        List<Inventory> inventoryList = app.storeService.addNewFilm(3, filmDTO, actorList, categoryList, 1);
+//        System.out.println(inventoryList.size());
     }
 }

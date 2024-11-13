@@ -16,16 +16,29 @@ public class InventoryDAO extends BaseDAO<Inventory> {
         Query<Rental> query1 = sessionFactory.getCurrentSession()
                 .createQuery("select r from Rental r left join r.inventory i where i.film.id = :filmId", Rental.class);
         query1.setParameter("filmId", filmId);
-        List<Rental> resultList = query1.getResultList();
-        List<Inventory> notNullList = resultList.stream().filter(rental -> rental.getReturnDate()!=null).map(Rental::getInventory).toList();
-        List<Inventory> nullList = resultList.stream().filter(rental -> rental.getReturnDate()==null).map(Rental::getInventory).toList();
+        List<Rental> rentalFilmResultList = query1.getResultList();
 
-        if (nullList.isEmpty()){
-            return notNullList.get(0);
-        } else if (!notNullList.isEmpty()) {
-            for (Inventory inventory : notNullList) {
-                if (!nullList.contains(inventory)) {
-                    return inventory;
+        if (rentalFilmResultList.isEmpty()) {
+            Query<Inventory> query2 = sessionFactory.getCurrentSession()
+                    .createQuery("from Inventory i where i.film.id = :filmId", Inventory.class);
+            query2.setParameter("filmId", filmId);
+            query2.setMaxResults(1);
+            return query2.getSingleResult();
+        } else {
+            List<Inventory> notNullList = rentalFilmResultList.stream()
+                    .filter(rental -> rental.getReturnDate() != null)
+                    .map(Rental::getInventory).toList();
+            List<Inventory> nullList = rentalFilmResultList.stream()
+                    .filter(rental -> rental.getReturnDate() == null)
+                    .map(Rental::getInventory).toList();
+
+            if (nullList.isEmpty()) {
+                return notNullList.get(0);
+            } else if (!notNullList.isEmpty()) {
+                for (Inventory inventory : notNullList) {
+                    if (!nullList.contains(inventory)) {
+                        return inventory;
+                    }
                 }
             }
         }

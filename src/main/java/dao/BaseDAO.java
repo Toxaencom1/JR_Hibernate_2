@@ -12,7 +12,7 @@ public class BaseDAO<T> {
 
     protected SessionFactory sessionFactory;
 
-    public T getById(int id) {
+    public T findById(int id) {
         return getCurrentSession().find(clazz, id);
     }
 
@@ -25,6 +25,11 @@ public class BaseDAO<T> {
         return entity;
     }
 
+    public List<T> save(List<T> entity) {
+        entity.forEach(this::save);
+        return entity;
+    }
+
     public T update(T entity) {
         return getCurrentSession().merge(entity);
     }
@@ -34,7 +39,7 @@ public class BaseDAO<T> {
     }
 
     public void delete(int id) {
-        getCurrentSession().remove(getById(id));
+        getCurrentSession().remove(findById(id));
     }
 
     protected Session getCurrentSession() {

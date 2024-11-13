@@ -2,6 +2,7 @@ package service;
 
 import dao.*;
 import dto.CustomerCreateDTO;
+import dto.FilmCreateDTO;
 import entity.*;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -9,14 +10,14 @@ import org.hibernate.Transaction;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class StoreService {
     private final SessionFactory sessionFactory;
 
-    private final ActorDAO actorDAO;
     private final AddressDAO addressDAO;
-    private final CategoryDAO categoryDAO;
     private final CityDAO cityDAO;
     private final CountryDAO countryDAO;
     private final CustomerDAO customerDAO;
@@ -28,12 +29,13 @@ public class StoreService {
     private final RentalDAO rentalDAO;
     private final StaffDAO staffDAO;
     private final StoreDAO storeDAO;
+    private final ActorDAO actorDAO;
+    private final CategoryDAO categoryDAO;
 
     public StoreService(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
-        actorDAO = new ActorDAO(sessionFactory);
         addressDAO = new AddressDAO(sessionFactory);
-        categoryDAO = new CategoryDAO(sessionFactory);
+
         cityDAO = new CityDAO(sessionFactory);
         countryDAO = new CountryDAO(sessionFactory);
         customerDAO = new CustomerDAO(sessionFactory);
@@ -45,13 +47,16 @@ public class StoreService {
         rentalDAO = new RentalDAO(sessionFactory);
         staffDAO = new StaffDAO(sessionFactory);
         storeDAO = new StoreDAO(sessionFactory);
+
+        actorDAO = new ActorDAO(sessionFactory);
+        categoryDAO = new CategoryDAO(sessionFactory);
     }
 
     public Customer createCustomer(CustomerCreateDTO customerCreateDTO, int storeId) {
 
         try (Session session = sessionFactory.getCurrentSession()) {
             Transaction transaction = session.beginTransaction();
-            Store store = storeDAO.getById(storeId);
+            Store store = storeDAO.findById(storeId);
             Address address;
             Optional<Address> addressByName = addressDAO.getAddressByName(customerCreateDTO.getAddress());
             if (!addressByName.isPresent()) {
@@ -89,7 +94,7 @@ public class StoreService {
         try (Session session = sessionFactory.getCurrentSession()) {
             Transaction transaction = session.beginTransaction();
 
-            Rental rental = rentalDAO.getById(rentalId);
+            Rental rental = rentalDAO.findById(rentalId);
             rental.setReturnDate(LocalDateTime.now());
             rentalDAO.update(rental);
             transaction.commit();
@@ -101,11 +106,11 @@ public class StoreService {
         try (Session session = sessionFactory.getCurrentSession()) {
             Transaction transaction = session.beginTransaction();
 
-            Customer customer = customerDAO.getById(customerId);
+            Customer customer = customerDAO.findById(customerId);
 
             Inventory inventory = inventoryDAO.pickAvailableInventoryMovie(filmId);
 
-            Staff staff = staffDAO.getById(staffId);
+            Staff staff = staffDAO.findById(staffId);
 
             if (customer != null && inventory != null && staff != null) {
                 Rental rental = Rental.builder()
@@ -129,14 +134,59 @@ public class StoreService {
         }
     }
 
-//    public Film addNewFilm(FilmCreateDTO){
-//        try (Session session = sessionFactory.getCurrentSession()) {
-//            Transaction transaction = session.beginTransaction();
-//
-//
-//
-//            transaction.commit();
-//            return  film;
-//        }
-//    }
+    public List<Inventory> addNewFilm(int count, FilmCreateDTO filmDTO, List<Actor> actorList, List<Category> categories, int storeId) {
+        try (Session session = sessionFactory.getCurrentSession()) {
+            Transaction transaction = session.beginTransaction();
+
+            Language language = languageDAO.findById(filmDTO.getLanguageId());
+            Language originalLanguage = languageDAO.findById(filmDTO.getOriginalLanguageId());
+            Store store = storeDAO.findById(storeId);
+
+            Film film = Film.builder()
+                    .title(filmDTO.getTitle())
+                    .description(filmDTO.getDescription())
+                    .releaseYear(filmDTO.getReleaseYear())
+                    .language(language)
+                    .originalLanguage(originalLanguage)
+                    .rentalDuration(filmDTO.getRentalDuration())
+                    .rentalRate(filmDTO.getRentalRate())
+                    .length(filmDTO.getLength())
+                    .replacementCost(filmDTO.getReplacementCost())
+                    .rating(filmDTO.getRating())
+                    .specialFeatures(filmDTO.getSpecialFeatures())
+                    .actors(actorList)
+                    .categories(categories)
+                    .build();
+
+            List<Inventory> inventoryList = new ArrayList<>();
+            for (int i = 0; i < count; i++) {
+                Inventory inventory = Inventory.builder()
+                        .film(film)
+                        .store(store)
+                        .build();
+                inventoryList.add(inventory);
+            }
+            List<Inventory> savedList = inventoryDAO.save(inventoryList);
+            transaction.commit();
+            return savedList;
+        }
+    }
+
+    public Actor findActorByNameAndSurname(String name, String surname) {
+        try (Session session = sessionFactory.getCurrentSession()) {
+            Transaction transaction = session.beginTransaction();
+            Actor actor = actorDAO.findActorByNameAndSurname(name, surname);
+            transaction.commit();
+            return actor;
+        }
+    }
+
+    public Category findCategoryByName(String categoryName) {
+        try (Session session = sessionFactory.getCurrentSession()) {
+            Transaction transaction = session.beginTransaction();
+            Category category = categoryDAO.findByName(categoryName);
+            transaction.commit();
+            return category;
+        }
+    }
 }
